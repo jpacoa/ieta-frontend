@@ -1,0 +1,61 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "about": "Acerca de",
+    "research": "Investigación",
+    "journal": "Revista Varianza",
+    "services": "Servicios",
+    "news": "Noticias",
+    "resources": "Recursos",
+    "contact": "Contacto",
+    "login": "Ingresar"
+  },
+  "tabs": {
+    "whoWeAre": "¿Quiénes Somos?",
+    "missionVision": "Misión y Visión",
+    "objectives": "Objetivos",
+    "staff": "Personal",
+    "regulations": "Reglamento Interno",
+    "about": "Sobre la Revista",
+    "committee": "Comité Editor",
+    "authors": "Autores",
+    "editions": "Ediciones",
+    "instructions": "Instrucciones para Autores",
+    "database": "Banco de Datos",
+    "statsJournals": "Revistas de Estadística"
+  },
+  "common": {
+    "readMore": "Leer más",
+    "viewMore": "Ver más",
+    "loadMore": "Cargar más",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "clearFilters": "Limpiar filtros",
+    "year": "Año",
+    "type": "Tipo",
+    "all": "Todos",
+    "loading": "Cargando...",
+    "error": "Ocurrió un error al cargar el contenido.",
+    "noResults": "No se encontraron resultados.",
+    "tryAgain": "Intentar de nuevo"
+  },
+  "status": {
+    "open": "Inscripciones abiertas",
+    "closed": "Inscripciones cerradas",
+    "finished": "Finalizado"
+  },
+  "footer": {
+    "rights": "Todos los derechos reservados.",
+    "institution": "Instituto de Estadística Teórica y Aplicada",
+    "university": "Universidad Mayor de San Andrés"
+  },
+  "aria": {
+    "mainNav": "Navegación principal",
+    "footerNav": "Navegación del pie de página",
+    "breadcrumb": "Ruta de navegación",
+    "prevSlide": "Diapositiva anterior",
+    "nextSlide": "Diapositiva siguiente",
+    "closeMenu": "Cerrar menú",
+    "openMenu": "Abrir menú"
+  }
+}
