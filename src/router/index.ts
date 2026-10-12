@@ -1,6 +1,12 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import PublicLayout from '@/layouts/PublicLayout.vue'
 
+/**
+ * meta.breadcrumb: array de segmentos para el breadcrumb dinámico.
+ * Si no se define, Breadcrumb.vue lo construye desde matched[].
+ * meta.title: se usa en <title> del documento y como último segmento del breadcrumb.
+ */
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   scrollBehavior(_to, _from, savedPosition) {
@@ -25,33 +31,65 @@ const router = createRouter({
           path: 'acerca-de/:tab?',
           name: 'acerca-de',
           component: () => import('@/views/AcercaDeView.vue'),
-          meta: { title: 'Acerca de' },
+          meta: {
+            title: 'Acerca de',
+            breadcrumb: [{ label: 'Inicio', to: '/' }, { label: 'Acerca de' }],
+          },
         },
         {
           path: 'acerca-de/personal/:slug',
           name: 'personal-ficha',
           component: () => import('@/views/PersonalFichaView.vue'),
-          meta: { title: 'Personal' },
+          meta: {
+            title: 'Personal',
+            breadcrumb: [
+              { label: 'Inicio', to: '/' },
+              { label: 'Acerca de', to: '/acerca-de/personal' },
+              { label: 'Personal' },
+            ],
+          },
         },
 
         // ── Investigación ───────────────────────────────────────
         {
-          path: 'investigacion/lineas',
-          name: 'investigacion-lineas',
+          path: 'investigacion/lineas-investigacion',
+          name: 'investigacion-lineas-investigacion',
           component: () => import('@/views/InvestigacionLineasView.vue'),
-          meta: { title: 'Líneas de Investigación' },
+          meta: {
+            title: 'Líneas de Investigación',
+            breadcrumb: [
+              { label: 'Inicio', to: '/' },
+              { label: 'Investigación' },
+              { label: 'Líneas de Investigación' },
+            ],
+          },
         },
         {
-          path: 'investigacion/lineas/:slug',
+          path: 'investigacion/lineas-investigacion/:id',
           name: 'investigacion-linea-detalle',
           component: () => import('@/views/InvestigacionLineaDetalleView.vue'),
-          meta: { title: 'Detalle de Línea' },
+          meta: {
+            title: 'Detalle de Línea',
+            breadcrumb: [
+              { label: 'Inicio', to: '/' },
+              { label: 'Investigación' },
+              { label: 'Líneas de Investigación', to: '/investigacion/lineas-investigacion' },
+              { label: 'Detalle' },
+            ],
+          },
         },
         {
           path: 'investigacion/memorias',
           name: 'investigacion-memorias',
           component: () => import('@/views/InvestigacionMemoriasView.vue'),
-          meta: { title: 'Memorias de Investigación' },
+          meta: {
+            title: 'Memorias de Investigación',
+            breadcrumb: [
+              { label: 'Inicio', to: '/' },
+              { label: 'Investigación' },
+              { label: 'Memorias de Investigación' },
+            ],
+          },
         },
 
         // ── Revista Varianza ────────────────────────────────────
@@ -59,25 +97,51 @@ const router = createRouter({
           path: 'revista-varianza/:tab?',
           name: 'revista-varianza',
           component: () => import('@/views/RevistaVarianzaView.vue'),
-          meta: { title: 'Revista Varianza' },
+          meta: {
+            title: 'Revista Varianza',
+            breadcrumb: [{ label: 'Inicio', to: '/' }, { label: 'Revista Varianza' }],
+          },
         },
         {
           path: 'revista-varianza/autores/:slug',
           name: 'autor-perfil',
           component: () => import('@/views/AutorPerfilView.vue'),
-          meta: { title: 'Perfil de Autor' },
+          meta: {
+            title: 'Perfil de Autor',
+            breadcrumb: [
+              { label: 'Inicio', to: '/' },
+              { label: 'Revista Varianza', to: '/revista-varianza/autores' },
+              { label: 'Autores', to: '/revista-varianza/autores' },
+              { label: 'Perfil de Autor' },
+            ],
+          },
         },
         {
           path: 'revista-varianza/ediciones/:numero',
           name: 'edicion-detalle',
           component: () => import('@/views/EdicionDetalleView.vue'),
-          meta: { title: 'Edición' },
+          meta: {
+            title: 'Edición',
+            breadcrumb: [
+              { label: 'Inicio', to: '/' },
+              { label: 'Revista Varianza', to: '/revista-varianza/ediciones' },
+              { label: 'Ediciones', to: '/revista-varianza/ediciones' },
+              { label: 'Edición' },
+            ],
+          },
         },
         {
           path: 'revista-varianza/articulos/:slug',
           name: 'articulo-detalle',
           component: () => import('@/views/ArticuloDetalleView.vue'),
-          meta: { title: 'Artículo' },
+          meta: {
+            title: 'Artículo',
+            breadcrumb: [
+              { label: 'Inicio', to: '/' },
+              { label: 'Revista Varianza', to: '/revista-varianza/ediciones' },
+              { label: 'Artículo' },
+            ],
+          },
         },
 
         // ── Servicios ───────────────────────────────────────────
@@ -85,13 +149,23 @@ const router = createRouter({
           path: 'servicios',
           name: 'servicios',
           component: () => import('@/views/ServiciosView.vue'),
-          meta: { title: 'Servicios' },
+          meta: {
+            title: 'Servicios',
+            breadcrumb: [{ label: 'Inicio', to: '/' }, { label: 'Servicios' }],
+          },
         },
         {
           path: 'servicios/:slug',
           name: 'servicio-detalle',
           component: () => import('@/views/ServicioDetalleView.vue'),
-          meta: { title: 'Servicio' },
+          meta: {
+            title: 'Servicio',
+            breadcrumb: [
+              { label: 'Inicio', to: '/' },
+              { label: 'Servicios', to: '/servicios' },
+              { label: 'Servicio' },
+            ],
+          },
         },
 
         // ── Noticias ────────────────────────────────────────────
@@ -99,23 +173,34 @@ const router = createRouter({
           path: 'noticias',
           name: 'noticias',
           component: () => import('@/views/NoticiasView.vue'),
-          meta: { title: 'Noticias' },
+          meta: {
+            title: 'Noticias',
+            breadcrumb: [{ label: 'Inicio', to: '/' }, { label: 'Noticias' }],
+          },
         },
         {
           path: 'noticias/:slug',
           name: 'noticia-detalle',
           component: () => import('@/views/NoticiaDetalleView.vue'),
-          meta: { title: 'Noticia' },
+          meta: {
+            title: 'Noticia',
+            breadcrumb: [
+              { label: 'Inicio', to: '/' },
+              { label: 'Noticias', to: '/noticias' },
+              { label: 'Noticia' },
+            ],
+          },
         },
 
         // ── Cursos y Talleres ───────────────────────────────────
-        // Acceso: Inicio → tarjeta de curso → detalle
-        // No está en el menú principal (pendiente de validación)
         {
           path: 'cursos-talleres/:slug',
           name: 'curso-detalle',
           component: () => import('@/views/CursoDetalleView.vue'),
-          meta: { title: 'Cursos y Talleres' },
+          meta: {
+            title: 'Cursos y Talleres',
+            breadcrumb: [{ label: 'Inicio', to: '/' }, { label: 'Cursos y Talleres' }],
+          },
         },
 
         // ── Recursos ────────────────────────────────────────────
@@ -123,7 +208,10 @@ const router = createRouter({
           path: 'recursos/:tab?',
           name: 'recursos',
           component: () => import('@/views/RecursosView.vue'),
-          meta: { title: 'Recursos' },
+          meta: {
+            title: 'Recursos',
+            breadcrumb: [{ label: 'Inicio', to: '/' }, { label: 'Recursos' }],
+          },
         },
 
         // ── Contacto ────────────────────────────────────────────
@@ -131,8 +219,21 @@ const router = createRouter({
           path: 'contacto',
           name: 'contacto',
           component: () => import('@/views/ContactoView.vue'),
-          meta: { title: 'Contacto' },
+          meta: {
+            title: 'Contacto',
+            breadcrumb: [{ label: 'Inicio', to: '/' }, { label: 'Contacto' }],
+          },
         },
+        ...(import.meta.env.DEV
+          ? [
+              {
+                path: 'dev-components',
+                name: 'dev-components',
+                component: () => import('@/views/DevComponentsView.vue'),
+                meta: { title: 'Componentes base' },
+              },
+            ]
+          : []),
       ],
     },
 

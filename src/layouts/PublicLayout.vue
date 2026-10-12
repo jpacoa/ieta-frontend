@@ -7,9 +7,16 @@ import AppFooter from '@/components/layout/AppFooter.vue'
 <template>
   <div class="public-layout">
     <AppHeader />
+
     <main class="main-content">
-      <RouterView />
+      <!-- Transición fade entre rutas — Guía §6.7 -->
+      <RouterView v-slot="{ Component, route }">
+        <Transition name="page-fade" mode="out-in">
+          <component :is="Component" :key="route.path" />
+        </Transition>
+      </RouterView>
     </main>
+
     <AppFooter />
   </div>
 </template>
@@ -23,6 +30,26 @@ import AppFooter from '@/components/layout/AppFooter.vue'
 
 .main-content {
   flex: 1;
-  padding-top: var(--header-height);
+  /* El header es fixed, las vistas internas con SectionHeaderBand
+     ya contemplan el padding-top internamente.
+     Para la home y otras vistas sin banda, se añade padding base. */
+}
+
+/* Transición fade entre páginas — Guía §6.7: 0.2-0.3s */
+.page-fade-enter-active,
+.page-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.page-fade-enter-from,
+.page-fade-leave-to {
+  opacity: 0;
+}
+
+/* Respetar prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .page-fade-enter-active,
+  .page-fade-leave-active {
+    transition: none;
+  }
 }
 </style>

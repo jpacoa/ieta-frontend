@@ -34,4 +34,6 @@ apiClient.interceptors.response.use(
   },
 )
 
+export const apiPool = apiClient
+
 export default apiClient

@@ -1,32 +1,26 @@
 ﻿<script setup lang="ts">
-// Vista: Detalle de Edición
-// Ruta: /revista-varianza/ediciones/:numero
-// Estado: esqueleto — Fase 3
+import SectionHeaderBand from '@/components/layout/SectionHeaderBand.vue'
+// Vista: Edición
+// Estado: esqueleto — Fase 3 / contenido real en Fase 7
 </script>
 
 <template>
-  <div class="view-skeleton">
-    <h1>Detalle de Edición</h1>
-    <p class="view-skeleton__route">Ruta: <code>/revista-varianza/ediciones/:numero</code></p>
+  <div>
+    <SectionHeaderBand title="Edición" />
+    <div class="container view-body">
+      <p class="view-placeholder">Contenido de <strong>Edición</strong> — se implementa en Fase 7</p>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.view-skeleton {
-  padding: var(--space-8) 0;
-  min-height: 60vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  text-align: center;
+.view-body {
+  padding-block: var(--space-8);
+  min-height: 40vh;
 }
-.view-skeleton h1 {
-  color: var(--color-indigo);
-}
-.view-skeleton__route {
+.view-placeholder {
   color: var(--color-violeta);
   font-size: var(--text-small-size);
+  text-align: center;
 }
 </style>
