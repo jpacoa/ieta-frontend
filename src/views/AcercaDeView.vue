@@ -2,11 +2,17 @@
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
+import ContentCard from '@/components/common/ContentCard.vue'
 import EditorJsContent from '@/components/common/EditorJsContent.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
+import LoadMoreButton from '@/components/common/LoadMoreButton.vue'
 import TabNav from '@/components/common/TabNav.vue'
 import SectionHeaderBand from '@/components/layout/SectionHeaderBand.vue'
 import { SobreNosotrosRepository } from '@/api/repositories.js'
+import { PersonalRepository } from '@/api/repositories.js'
+import type { StaffApiItem } from '@/api/types'
+import { mediaUrl } from '@/api/response'
+import { usePaginatedResource } from '@/composables/usePaginatedResource'
 
 interface AboutContent {
   id: number
@@ -42,6 +48,7 @@ const activeTab = computed({
   },
 })
 const content = ref<AboutContent | null>(null)
+const staffResource = usePaginatedResource<StaffApiItem>((page) => PersonalRepository.list({ page }))
 const loading = ref(true)
 const error = ref(false)
 
@@ -60,7 +67,12 @@ async function loadAboutContent() {
   }
 }
 
+async function loadStaff() {
+  await staffResource.refresh()
+}
+
 onMounted(loadAboutContent)
+onMounted(loadStaff)
 </script>
 
 <template>
@@ -110,6 +122,33 @@ onMounted(loadAboutContent)
         <section v-else-if="activeTab === 'objetivos'" class="about-panel">
           <EditorJsContent v-if="content.objetivos" :content="content.objetivos" />
           <EmptyState v-else />
+        </section>
+
+        <section v-else-if="activeTab === 'personal'" class="about-panel">
+          <div v-if="staffResource.loading.value && staffResource.items.value.length === 0" class="content-state" role="status">Cargando personal…</div>
+          <div v-else-if="staffResource.error.value && staffResource.items.value.length === 0" class="content-state" role="alert">
+            <p>{{ t('common.error') }}</p>
+            <button class="retry-button" type="button" @click="loadStaff">{{ t('common.tryAgain') }}</button>
+          </div>
+          <div v-else-if="staffResource.items.value.length" class="staff-grid">
+            <ContentCard
+              v-for="member in staffResource.items.value.filter((person) => person.estado !== false)"
+              :key="member.id"
+              type="investigacion"
+              :title="member.persona?.nombre_completo || [member.persona?.p_nombre, member.persona?.p_apellido_paterno, member.persona?.p_apellido_materno].filter(Boolean).join(' ') || 'Personal IETA'"
+              :eyebrow="member.cargo?.nombre || t('tabs.staff')"
+              :summary="member.descripcion || undefined"
+              :image="mediaUrl(member.persona?.foto_url)"
+              :image-alt="member.persona?.nombre_completo || t('tabs.staff')"
+              :to="`/acerca-de/personal/${member.id}`"
+            />
+          </div>
+          <EmptyState v-else :title="t('common.noResults')" />
+          <LoadMoreButton
+            :loading="staffResource.loadingMore.value"
+            :has-more="staffResource.hasMore.value"
+            @load="staffResource.loadMore"
+          />
         </section>
 
         <EmptyState

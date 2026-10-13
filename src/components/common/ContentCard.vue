@@ -3,7 +3,7 @@ import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 
-type ContentType = 'noticia' | 'curso' | 'investigacion' | 'edicion'
+type ContentType = 'noticia' | 'curso' | 'investigacion' | 'edicion' | 'servicio'
 
 interface Props {
   type: ContentType
@@ -17,6 +17,7 @@ interface Props {
   imageLoading?: 'eager' | 'lazy'
   headingLevel?: 2 | 3
   to?: string
+  href?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -26,8 +27,12 @@ const props = withDefaults(defineProps<Props>(), {
 const { t } = useI18n()
 
 const imageFailed = ref(false)
-const cardComponent = computed(() => (props.to ? RouterLink : 'article'))
-const cardTarget = computed(() => (props.to ? { to: props.to } : {}))
+const cardComponent = computed(() => (props.to ? RouterLink : props.href ? 'a' : 'article'))
+const cardTarget = computed(() => {
+  if (props.to) return { to: props.to }
+  if (props.href) return { href: props.href, target: '_blank', rel: 'noopener noreferrer' }
+  return {}
+})
 
 watch(
   () => props.image,
@@ -42,7 +47,7 @@ watch(
     :is="cardComponent"
     v-bind="cardTarget"
     class="content-card"
-    :class="[`content-card--${type}`, { 'content-card--linked': to }]"
+    :class="[`content-card--${type}`, { 'content-card--linked': to || href }]"
   >
     <div class="content-card__media">
       <img

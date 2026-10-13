@@ -1,7 +1,18 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { Clock3, Mail, MapPin, Phone } from '@lucide/vue'
 import { ContactoRepository } from '@/api/repositories.js'
+import logoIeta from '@/assets/images/logoieta_400.png'
+import type { InstitutionConfigApiItem } from '@/api/types'
+import { mediaUrl } from '@/api/response'
+
+const props = withDefaults(defineProps<{
+  variant?: 'default' | 'editorial'
+  institutionConfig?: InstitutionConfigApiItem | null
+}>(), { variant: 'default', institutionConfig: null })
+const footerLogo = computed(() => mediaUrl(props.institutionConfig?.logo_principal_url) || logoIeta)
+const institutionName = computed(() => props.institutionConfig?.nombre_institucion || 'Instituto de Estadística Teórica y Aplicada')
+const institutionCopyright = computed(() => props.institutionConfig?.copyright || `© ${new Date().getFullYear()} IETA — Instituto de Estadística Teórica y Aplicada. Todos los derechos reservados.`)
 
 interface ContactInfo {
   telefonos: string[]
@@ -34,7 +45,7 @@ function formatTime(value: string) {
 </script>
 
 <template>
-  <footer class="app-footer" aria-labelledby="footer-heading">
+  <footer class="app-footer" :class="`app-footer--${variant}`" aria-labelledby="footer-heading">
     <h2 id="footer-heading" class="visually-hidden">Pie de página</h2>
 
     <div class="footer-body">
@@ -42,14 +53,23 @@ function formatTime(value: string) {
         <!-- ── Brand e info institucional ──────────────────────── -->
         <div class="footer-brand">
           <RouterLink to="/" class="footer-brand__logo" aria-label="IETA — Ir al inicio">
-            <span class="footer-brand__acronym">IETA</span>
+            <img :src="footerLogo" alt="" />
           </RouterLink>
-          <p class="footer-brand__name">Instituto de Estadística<br />Teórica y Aplicada</p>
+          <p class="footer-brand__name">{{ institutionName }}</p>
           <p class="footer-brand__org">Universidad Mayor de San Andrés</p>
 
-          <address v-if="contact" class="footer-contact">
+          <address v-if="contact || institutionConfig" class="footer-contact">
             <a
-              v-for="email in contact.emails"
+              v-if="institutionConfig?.email_principal"
+              :href="`mailto:${institutionConfig.email_principal}`"
+              class="footer-contact__item"
+            >
+              <Mail class="footer-contact__icon" aria-hidden="true" />
+              {{ institutionConfig.email_principal }}
+            </a>
+            <a
+              v-else
+              v-for="email in contact?.emails || []"
               :key="email"
               :href="`mailto:${email}`"
               class="footer-contact__item"
@@ -58,7 +78,16 @@ function formatTime(value: string) {
               {{ email }}
             </a>
             <a
-              v-for="phone in contact.telefonos"
+              v-if="institutionConfig?.telefono_principal"
+              :href="phoneHref(institutionConfig.telefono_principal)"
+              class="footer-contact__item"
+            >
+              <Phone class="footer-contact__icon" aria-hidden="true" />
+              {{ institutionConfig.telefono_principal }}
+            </a>
+            <a
+              v-else
+              v-for="phone in contact?.telefonos || []"
               :key="phone"
               :href="phoneHref(phone)"
               class="footer-contact__item"
@@ -66,11 +95,11 @@ function formatTime(value: string) {
               <Phone class="footer-contact__icon" aria-hidden="true" />
               {{ phone }}
             </a>
-            <p v-if="contact.direccion" class="footer-contact__item">
+            <p v-if="institutionConfig?.direccion_principal || contact?.direccion" class="footer-contact__item">
               <MapPin class="footer-contact__icon" aria-hidden="true" />
-              {{ contact.direccion }}
+              {{ institutionConfig?.direccion_principal || contact?.direccion }}
             </p>
-            <p v-if="contact.dia_inicio && contact.dia_fin" class="footer-contact__item">
+            <p v-if="contact?.dia_inicio && contact?.dia_fin" class="footer-contact__item">
               <Clock3 class="footer-contact__icon" aria-hidden="true" />
               {{ contact.dia_inicio }} a {{ contact.dia_fin }},
               {{ formatTime(contact.hora_apertura) }}–{{ formatTime(contact.hora_cierre) }}
@@ -132,13 +161,13 @@ function formatTime(value: string) {
     <div class="footer-bottom">
       <div class="container footer-bottom__inner">
         <p class="footer-bottom__copy">
-          &copy; {{ new Date().getFullYear() }} IETA — Instituto de Estadística Teórica y Aplicada.
-          Todos los derechos reservados.
+          {{ institutionCopyright }}
         </p>
         <!-- Redes sociales — íconos funcionales con aria-label — Guía §9 -->
         <div class="footer-social" role="list" aria-label="Redes sociales">
           <a
-            href="https://facebook.com"
+            v-if="!institutionConfig || institutionConfig.redes_sociales?.facebook"
+            :href="institutionConfig?.redes_sociales?.facebook || 'https://facebook.com'"
             target="_blank"
             rel="noopener noreferrer"
             class="footer-social__link"
@@ -152,7 +181,8 @@ function formatTime(value: string) {
             </svg>
           </a>
           <a
-            href="https://twitter.com"
+            v-if="!institutionConfig || institutionConfig.redes_sociales?.twitter"
+            :href="institutionConfig?.redes_sociales?.twitter || 'https://twitter.com'"
             target="_blank"
             rel="noopener noreferrer"
             class="footer-social__link"
@@ -166,7 +196,8 @@ function formatTime(value: string) {
             </svg>
           </a>
           <a
-            href="https://youtube.com"
+            v-if="!institutionConfig || institutionConfig.redes_sociales?.youtube"
+            :href="institutionConfig?.redes_sociales?.youtube || 'https://youtube.com'"
             target="_blank"
             rel="noopener noreferrer"
             class="footer-social__link"
@@ -179,6 +210,24 @@ function formatTime(value: string) {
               />
             </svg>
           </a>
+          <a
+            v-if="institutionConfig?.redes_sociales?.linkedin"
+            :href="institutionConfig.redes_sociales.linkedin"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="footer-social__link footer-social__text-link"
+            role="listitem"
+            aria-label="IETA en LinkedIn (abre en nueva pestaña)"
+          >in</a>
+          <a
+            v-if="institutionConfig?.redes_sociales?.instagram"
+            :href="institutionConfig.redes_sociales.instagram"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="footer-social__link footer-social__text-link"
+            role="listitem"
+            aria-label="IETA en Instagram (abre en nueva pestaña)"
+          >ig</a>
         </div>
       </div>
     </div>
@@ -370,6 +419,107 @@ function formatTime(value: string) {
   height: 16px;
 }
 
+.footer-social__text-link {
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.app-footer--editorial {
+  background: #fff;
+  color: #14161c;
+}
+
+.app-footer--editorial .footer-body {
+  padding-block: var(--space-2) 0;
+}
+
+.app-footer--editorial .footer-body__inner {
+  grid-template-columns: 1fr;
+  justify-items: center;
+  gap: var(--space-1);
+  text-align: center;
+}
+
+.app-footer--editorial .footer-brand {
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.app-footer--editorial .footer-brand__logo {
+  width: 4.25rem;
+  height: 4.25rem;
+  margin: 0;
+}
+
+.app-footer--editorial .footer-brand__logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.app-footer--editorial .footer-brand__name {
+  color: #14161c;
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.app-footer--editorial .footer-brand__org,
+.app-footer--editorial .footer-nav {
+  display: none;
+}
+
+.app-footer--editorial .footer-contact {
+  align-items: center;
+  gap: 0.1rem;
+  margin-top: 0.25rem;
+}
+
+.app-footer--editorial .footer-contact__item {
+  justify-content: center;
+  color: #333;
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.app-footer--editorial .footer-contact__icon {
+  display: none;
+}
+
+.app-footer--editorial .footer-bottom {
+  padding-block: var(--space-1) var(--space-2);
+  border-top: 0;
+  background: #fff;
+}
+
+.app-footer--editorial .footer-bottom__inner {
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.3rem;
+  text-align: center;
+}
+
+.app-footer--editorial .footer-social {
+  order: -1;
+  gap: 0.5rem;
+}
+
+.app-footer--editorial .footer-social__link {
+  width: 2rem;
+  height: 2rem;
+  background: transparent;
+  color: #49328d;
+}
+
+.app-footer--editorial .footer-social__link:hover {
+  background: #f4e8ef;
+  color: #f50088;
+}
+
+.app-footer--editorial .footer-bottom__copy {
+  color: #555;
+  font-size: 0.6875rem;
+}
+
 /* ── Responsive ──────────────────────────────────────────────── */
 @media (max-width: 1024px) {
   .footer-body__inner {
@@ -395,6 +545,10 @@ function formatTime(value: string) {
 @media (max-width: 480px) {
   .footer-nav {
     grid-template-columns: 1fr;
+  }
+
+  .app-footer--editorial .footer-bottom__inner {
+    align-items: center;
   }
 }
 </style>

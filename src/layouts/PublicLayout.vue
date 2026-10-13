@@ -1,12 +1,32 @@
 <script setup lang="ts">
+import { computed, onMounted, ref } from 'vue'
 import { RouterView } from 'vue-router'
+import { useRoute } from 'vue-router'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppFooter from '@/components/layout/AppFooter.vue'
+import AnnouncementModal from '@/components/layout/AnnouncementModal.vue'
+import { ConfiguracionRepository } from '@/api/repositories.js'
+import { unwrapResource } from '@/api/response'
+import type { InstitutionConfigApiItem } from '@/api/types'
+
+const route = useRoute()
+const footerVariant = computed(() =>
+  route.path.startsWith('/revista-varianza') ? 'editorial' : 'default',
+)
+const institutionConfig = ref<InstitutionConfigApiItem | null>(null)
+
+onMounted(async () => {
+  try {
+    institutionConfig.value = unwrapResource<InstitutionConfigApiItem>(await ConfiguracionRepository.get())
+  } catch {
+    institutionConfig.value = null
+  }
+})
 </script>
 
 <template>
   <div class="public-layout">
-    <AppHeader />
+    <AppHeader :institution-config="institutionConfig" />
 
     <main class="main-content">
       <!-- Transición fade entre rutas — Guía §6.7 -->
@@ -17,7 +37,8 @@ import AppFooter from '@/components/layout/AppFooter.vue'
       </RouterView>
     </main>
 
-    <AppFooter />
+    <AppFooter :variant="footerVariant" :institution-config="institutionConfig" />
+    <AnnouncementModal />
   </div>
 </template>
 

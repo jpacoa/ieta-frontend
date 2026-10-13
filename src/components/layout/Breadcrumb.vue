@@ -11,6 +11,8 @@
 import { computed } from 'vue'
 import { useRoute, RouterLink } from 'vue-router'
 
+const props = defineProps<{ appendLabel?: string }>()
+
 interface BreadcrumbItem {
   label: string
   to?: string
@@ -20,7 +22,9 @@ const route = useRoute()
 
 const items = computed<BreadcrumbItem[]>(() => {
   const meta = route.meta?.breadcrumb as BreadcrumbItem[] | undefined
-  if (meta && meta.length > 0) return meta
+  if (meta && meta.length > 0) {
+    return props.appendLabel ? [...meta, { label: props.appendLabel }] : meta
+  }
   // Fallback: solo Inicio para la home
   return [{ label: 'Inicio' }]
 })

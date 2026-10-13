@@ -19,8 +19,8 @@
   --color-tinta:        #14161C;  /* Texto principal, footer */
   --color-superficie:   #F5F5F8;  /* Fondo alterno de secciones */
   --color-desactivado:  #E0E0E0;  /* Estados disabled, bordes sutiles */
-  --color-blanco:       #FFFFFF;
 
+  --color-blanco:       #FFFFFF;
   /* ── Degradado de marca ──────────────────────────────────── */
   /* Reservado para bandas de cabecera de sección y hero de Inicio */
   --gradient-marca: linear-gradient(135deg, var(--color-indigo) 0%, var(--color-purpura) 100%);
@@ -87,8 +87,8 @@
   /* Menú hamburguesa: < 960px */
 
   /* ── Layout ──────────────────────────────────────────────── */
-  --container-max: 1280px;
-  --header-height: 72px;
-  --header-height-compact: 56px; /* después del scroll */
+  --container-max: 1920px;
+  --header-height: 83px;
+  --header-height-compact: 83px; /* después del scroll */
 }
 

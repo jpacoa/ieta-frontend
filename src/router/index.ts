@@ -103,6 +103,19 @@ const router = createRouter({
           },
         },
         {
+          path: 'revista-varianza/articulos',
+          name: 'revista-varianza-articulos',
+          component: () => import('@/views/ArticulosView.vue'),
+          meta: {
+            title: 'Artículos de Varianza',
+            breadcrumb: [
+              { label: 'Inicio', to: '/' },
+              { label: 'Revista Varianza', to: '/revista-varianza' },
+              { label: 'Artículos' },
+            ],
+          },
+        },
+        {
           path: 'revista-varianza/autores/:slug',
           name: 'autor-perfil',
           component: () => import('@/views/AutorPerfilView.vue'),
@@ -205,6 +218,20 @@ const router = createRouter({
 
         // ── Recursos ────────────────────────────────────────────
         {
+          path: 'recursos/banco-datos/:id',
+          name: 'recurso-banco-datos-detalle',
+          component: () => import('@/views/RecursoBancoDatosDetalleView.vue'),
+          meta: {
+            title: 'Conjunto de datos',
+            breadcrumb: [
+              { label: 'Inicio', to: '/' },
+              { label: 'Recursos', to: '/recursos' },
+              { label: 'Banco de Datos', to: '/recursos' },
+              { label: 'Conjunto de datos' },
+            ],
+          },
+        },
+        {
           path: 'recursos/:tab?',
           name: 'recursos',
           component: () => import('@/views/RecursosView.vue'),
@@ -222,6 +249,15 @@ const router = createRouter({
           meta: {
             title: 'Contacto',
             breadcrumb: [{ label: 'Inicio', to: '/' }, { label: 'Contacto' }],
+          },
+        },
+        {
+          path: 'multimedia',
+          name: 'multimedia',
+          component: () => import('@/views/MultimediaView.vue'),
+          meta: {
+            title: 'Multimedia',
+            breadcrumb: [{ label: 'Inicio', to: '/' }, { label: 'Multimedia' }],
           },
         },
         ...(import.meta.env.DEV

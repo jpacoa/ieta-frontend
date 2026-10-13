@@ -1,12 +1,17 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ContentCard from '@/components/common/ContentCard.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import LoadMoreButton from '@/components/common/LoadMoreButton.vue'
+import SearchFilterBar from '@/components/common/SearchFilterBar.vue'
 import SectionHeaderBand from '@/components/layout/SectionHeaderBand.vue'
 import TabNav from '@/components/common/TabNav.vue'
-import { LineasInvestigacionRepository } from '@/api/repositories.js'
+import { LineasInvestigacionRepository, MemoriasInvestigacionRepository } from '@/api/repositories.js'
+import type { ResearchMemoryApiItem } from '@/api/types'
+import { authorName, formatApiDate, memoryDate, memoryDescription, memoryTitle } from '@/api/normalizers'
+import { mediaUrl } from '@/api/response'
+import { usePaginatedResource } from '@/composables/usePaginatedResource'
 
 const { t } = useI18n()
 const tabs = computed(() => [
@@ -14,6 +19,11 @@ const tabs = computed(() => [
   { value: 'memorias', label: t('tabs.memorias') },
 ])
 const activeTab = ref('lineas')
+const memoryQuery = ref('')
+const memoryFilters = ref<Record<string, string>>({ year: '' })
+const memories = usePaginatedResource<ResearchMemoryApiItem>((page) =>
+  MemoriasInvestigacionRepository.list({ page }),
+)
 
 interface ResearchLine {
   id: number
@@ -39,6 +49,33 @@ const loadingMore = ref(false)
 const error = ref(false)
 const hasMore = computed(() => currentPage.value < lastPage.value)
 const apiBaseUrl = import.meta.env.VITE_API_URL
+
+const memoryFilterOptions = computed(() => [{
+  key: 'year',
+  label: 'Año',
+  options: [...new Set(memories.items.value.map((memory) => {
+    const date = new Date(memoryDate(memory))
+    return Number.isNaN(date.getTime()) ? '' : String(date.getFullYear())
+  }).filter(Boolean))]
+    .sort((first, second) => second.localeCompare(first))
+    .map((year) => ({ value: year, label: year })),
+}])
+
+const visibleMemories = computed(() => {
+  const query = memoryQuery.value.trim().toLocaleLowerCase()
+  return memories.items.value.filter((memory) => {
+    const author = memory.autor ? authorName(memory.autor) : ''
+    const searchable = `${memoryTitle(memory)} ${memoryDescription(memory)} ${memory.etiqueta ?? memory.mdi_etiqueta ?? ''} ${author}`
+    const date = new Date(memoryDate(memory))
+    const year = Number.isNaN(date.getTime()) ? '' : String(date.getFullYear())
+    return (!query || searchable.toLocaleLowerCase().includes(query)) &&
+      (!memoryFilters.value.year || year === memoryFilters.value.year)
+  })
+})
+
+watch(activeTab, (tab) => {
+  if (tab === 'memorias' && memories.page.value === 0) void memories.refresh()
+})
 
 async function loadLines(loadNextPage = false) {
   if (loadNextPage) loadingMore.value = true
@@ -87,13 +124,49 @@ onMounted(() => loadLines())
     <main class="container view-body">
       <TabNav v-model="activeTab" :items="tabs" :label="t('aria.researchSections')" />
 
-      <section
-        v-if="activeTab === 'memorias'"
-        class="memories-pending"
-        aria-labelledby="memories-heading"
-      >
-        <h2 id="memories-heading">{{ t('tabs.memorias') }}</h2>
-        <p>{{ t('research.memoriesPending') }}</p>
+      <section v-if="activeTab === 'memorias'" class="memories-panel" aria-labelledby="memories-heading">
+        <header class="memories-panel__heading">
+          <div>
+            <p>Producción académica</p>
+            <h2 id="memories-heading">{{ t('tabs.memorias') }}</h2>
+          </div>
+          <span>Registro institucional</span>
+        </header>
+        <SearchFilterBar
+          v-model="memoryQuery"
+          v-model:filter-values="memoryFilters"
+          :filters="memoryFilterOptions"
+          :no-results="memoryQuery.trim().length > 0 && visibleMemories.length === 0"
+        />
+        <div v-if="memories.loading.value && memories.items.value.length === 0" class="content-state" role="status">
+          Cargando memorias…
+        </div>
+        <div v-else-if="memories.error.value && memories.items.value.length === 0" class="content-state" role="alert">
+          <p>{{ t('common.error') }}</p>
+          <button class="retry-button" type="button" @click="memories.refresh">{{ t('common.tryAgain') }}</button>
+        </div>
+        <template v-else>
+          <div v-if="visibleMemories.length" class="memories-grid">
+            <ContentCard
+              v-for="memory in visibleMemories"
+              :key="memory.id"
+              type="investigacion"
+              :title="memoryTitle(memory) || 'Memoria de investigación'"
+              :eyebrow="memory.etiqueta || memory.mdi_etiqueta || 'Investigación'"
+              :summary="memoryDescription(memory)"
+              :date="formatApiDate(memoryDate(memory))"
+              :author="memory.autor ? authorName(memory.autor) : undefined"
+              :href="mediaUrl(memory.archivo_url || memory.enlace_url || memory.mdi_enlace_url)"
+            />
+          </div>
+          <EmptyState v-else-if="memories.items.value.length === 0" :title="t('common.noResults')" />
+          <EmptyState v-else title="No hay coincidencias" description="Cambia la búsqueda o limpia el filtro de año." />
+          <LoadMoreButton
+            :loading="memories.loadingMore.value"
+            :has-more="memories.hasMore.value"
+            @load="memories.loadMore"
+          />
+        </template>
       </section>
 
       <template v-else>
@@ -174,33 +247,59 @@ onMounted(() => loadLines())
   color: var(--color-rosa-carmin);
 }
 
-.memories-pending {
-  min-height: 18rem;
-  display: grid;
-  align-content: center;
-  justify-items: center;
+.memories-panel {
+  padding-block: var(--space-3);
+}
+
+.memories-panel__heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
   gap: var(--space-2);
-  text-align: center;
+  margin-bottom: var(--space-3);
 }
 
-.memories-pending h2 {
+.memories-panel__heading p {
+  color: var(--color-rosa-carmin);
+  font-size: var(--text-small-size);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.memories-panel__heading h2 {
+  margin-top: 0.25rem;
+  color: #202e71;
   font-size: var(--text-h4-size);
-  line-height: var(--text-h4-lh);
 }
 
-.memories-pending p {
-  max-width: 50ch;
+.memories-panel__heading > span {
   color: var(--color-violeta);
+  font-size: var(--text-small-size);
+}
+
+.memories-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin-top: var(--space-3);
 }
 
 @media (max-width: 960px) {
   .lines-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .memories-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 640px) {
   .lines-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .memories-grid {
     grid-template-columns: 1fr;
   }
 }

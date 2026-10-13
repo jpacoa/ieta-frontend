@@ -1,9 +1,16 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import logoIeta from '@/assets/images/logoieta_400.png'
+import type { InstitutionConfigApiItem } from '@/api/types'
+import { mediaUrl } from '@/api/response'
 
+const props = defineProps<{ institutionConfig?: InstitutionConfigApiItem | null }>()
 const route = useRoute()
+const logoUrl = computed(() => mediaUrl(props.institutionConfig?.logo_principal_url) || logoIeta)
+const institutionName = computed(() => props.institutionConfig?.nombre_institucion || 'Instituto de Estadística Teórica y Aplicada')
+const institutionShortName = computed(() => props.institutionConfig?.siglas || 'IETA')
+const institutionSlogan = computed(() => props.institutionConfig?.slogan || 'Carrera de Estadística')
 
 // ── Estado de compresión al scroll (Guía §6.5) ────────────────
 const isScrolled = ref(false)
@@ -35,6 +42,7 @@ const navItems = [
   { label: 'Servicios', to: '/servicios' },
   { label: 'Noticias', to: '/noticias' },
   { label: 'Recursos', to: '/recursos' },
+  { label: 'Multimedia', to: '/multimedia' },
   { label: 'Contacto', to: '/contacto' },
 ]
 
@@ -65,10 +73,13 @@ function isActive(to: string): boolean {
             <path d="M0 56 H100 Q120 56 120 36 V0 H0 Z" fill="white"/>
           </svg>
         </span>
-        <img class="header-brand__logo" :src="logoIeta" alt="" />
+        <img class="header-brand__logo" :src="logoUrl" alt="" />
         <span class="header-brand__text">
-          <span class="header-brand__full">Instituto de Estadística Teórica y Aplicada</span>
-          <span class="header-brand__career">Carrera de Estadística</span>
+          <span class="header-brand__full">
+          <span class="header-brand__full-name">{{ institutionName }}</span>
+          <span class="header-brand__short-name">{{ institutionShortName }}</span>
+          </span>
+          <span class="header-brand__career">{{ institutionSlogan }}</span>
         </span>
       </RouterLink>
 
@@ -212,6 +223,33 @@ function isActive(to: string): boolean {
   font-weight: 700;
   line-height: 1.15;
 }
+
+/* Nombre completo visible por defecto */
+.header-brand__short-name {
+  display: none;
+}
+
+.header-brand__full-name {
+  display: inline;
+}
+
+/* ── Adaptación para móviles ───────────────────────────── */
+@media (max-width: 1270px) {
+  .header-brand__full-name {
+    display: none;
+  }
+
+  .header-brand__short-name {
+    display: inline;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  .header-brand__career {
+    font-size: 0.6875rem;
+  }
+}
+
 .header-brand__career {
   font-size: 0.75rem;
   font-weight: 400;
@@ -313,7 +351,9 @@ function isActive(to: string): boolean {
   border-radius: var(--radius-sm);
   transition: background-color 0.15s ease;
   flex-shrink: 0;
+  margin-left: auto;
 }
+
 .header-hamburger:hover {
   background-color: rgba(255, 255, 255, 0.1);
 }
