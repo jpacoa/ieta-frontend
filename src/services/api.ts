@@ -18,6 +18,17 @@ const apiClient = axios.create({
   timeout: 10000,
 })
 
+// Idioma por defecto para la API
+const initialLocale = (typeof localStorage !== 'undefined' && localStorage.getItem('ieta-locale')) || 'es'
+apiClient.defaults.headers.common['Accept-Language'] = initialLocale
+
+// Interceptor de petición: asegura el header Accept-Language en cada llamada a la API
+apiClient.interceptors.request.use((config) => {
+  const currentLocale = (typeof localStorage !== 'undefined' && localStorage.getItem('ieta-locale')) || 'es'
+  config.headers['Accept-Language'] = currentLocale
+  return config
+})
+
 // Interceptor de respuesta: manejo centralizado de errores
 apiClient.interceptors.response.use(
   (response) => response,

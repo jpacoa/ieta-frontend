@@ -18,6 +18,14 @@ import type { ArticleApiItem, ArticleTagApiItem, VarianzaIssueApiItem } from '@/
 import { unwrapCollection, unwrapResource } from '@/api/response'
 import { useApiResource } from '@/composables/useApiResource'
 import { usePaginatedResource } from '@/composables/usePaginatedResource'
+import { useGsapReveal } from '@/composables/useGsapReveal'
+
+const articlesRoot = ref<HTMLElement | null>(null)
+useGsapReveal(articlesRoot, {
+  selector: '.articles-reveal',
+  stagger: 0.08,
+  y: 18,
+})
 
 const route = useRoute()
 const router = useRouter()
@@ -126,7 +134,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="articles-page">
+  <div ref="articlesRoot" class="articles-page">
     <SectionHeaderBand
       title="Artículos de Varianza"
       subtitle="Explora las publicaciones científicas vinculadas a cada edición de la revista."
@@ -134,9 +142,9 @@ onMounted(async () => {
     <VarianzaSectionNav active="articulos" :items="sectionItems" />
 
     <main class="container articles-page__main">
-      <RouterLink class="articles-page__back" to="/revista-varianza/ediciones">Volver a Revista Varianza</RouterLink>
+      <RouterLink class="articles-page__back articles-reveal" to="/revista-varianza/ediciones">Volver a Revista Varianza</RouterLink>
 
-      <section v-if="activeIssue" class="articles-edition" aria-labelledby="articles-edition-title">
+      <section v-if="activeIssue" class="articles-edition articles-reveal" aria-labelledby="articles-edition-title">
         <img v-if="mediaUrl(activeIssue.portada_url)" :src="mediaUrl(activeIssue.portada_url)" :alt="`Portada de ${activeIssue.titulo}`" />
         <span v-else class="articles-edition__cover-placeholder" aria-hidden="true">VARIANZA<br />N° {{ activeIssue.numero }}</span>
         <div>

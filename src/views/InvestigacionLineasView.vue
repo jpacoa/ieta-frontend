@@ -1,6 +1,16 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import {
+  BookOpen,
+  Calendar,
+  Download,
+  ExternalLink,
+  FileText,
+  FlaskConical,
+  Layers,
+  Search,
+} from '@lucide/vue'
 import ContentCard from '@/components/common/ContentCard.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import LoadMoreButton from '@/components/common/LoadMoreButton.vue'
@@ -12,8 +22,11 @@ import type { ResearchMemoryApiItem } from '@/api/types'
 import { authorName, formatApiDate, memoryDate, memoryDescription, memoryTitle } from '@/api/normalizers'
 import { mediaUrl } from '@/api/response'
 import { usePaginatedResource } from '@/composables/usePaginatedResource'
+import { useGsapReveal } from '@/composables/useGsapReveal'
 
 const { t } = useI18n()
+const researchRoot = ref<HTMLElement | null>(null)
+
 const tabs = computed(() => [
   { value: 'lineas', label: t('tabs.lineas') },
   { value: 'memorias', label: t('tabs.memorias') },
@@ -49,6 +62,12 @@ const loadingMore = ref(false)
 const error = ref(false)
 const hasMore = computed(() => currentPage.value < lastPage.value)
 const apiBaseUrl = import.meta.env.VITE_API_URL
+
+useGsapReveal(researchRoot, {
+  selector: '.research-reveal',
+  stagger: 0.08,
+  y: 18,
+})
 
 const memoryFilterOptions = computed(() => [{
   key: 'year',
@@ -105,7 +124,6 @@ function detailPath(line: ResearchLine): string {
 
 function imageUrl(path?: string | null): string | undefined {
   if (!path) return undefined
-
   try {
     const url = new URL(path, apiBaseUrl)
     return url.protocol === 'http:' || url.protocol === 'https:' ? url.href : undefined
@@ -118,189 +136,605 @@ onMounted(() => loadLines())
 </script>
 
 <template>
-  <div>
-    <SectionHeaderBand :title="t('research.linesTitle')" />
+  <div ref="researchRoot">
+    <SectionHeaderBand
+      :title="t('research.linesTitle')"
+      subtitle="Ejes temáticos, métodos de inferencia y producción científica del IETA."
+    />
 
     <main class="container view-body">
-      <TabNav v-model="activeTab" :items="tabs" :label="t('aria.researchSections')" />
+      <!-- Tabs Navigation -->
+      <div class="tabs-bar research-reveal">
+        <TabNav v-model="activeTab" :items="tabs" :label="t('aria.researchSections')" />
+      </div>
 
-      <section v-if="activeTab === 'memorias'" class="memories-panel" aria-labelledby="memories-heading">
-        <header class="memories-panel__heading">
-          <div>
-            <p>Producción académica</p>
-            <h2 id="memories-heading">{{ t('tabs.memorias') }}</h2>
+      <Transition name="tab-panel-fade" mode="out-in">
+        <!-- 1. MEMORIAS DE INVESTIGACIÓN (PDF Page 5) -->
+        <section v-if="activeTab === 'memorias'" key="memorias" class="memories-panel" aria-labelledby="memories-heading">
+        <!-- Centered Intro -->
+        <header class="research-centered-header">
+          <h2 id="memories-heading" class="research-centered-title">Memorias de Investigación</h2>
+          <p class="research-centered-lead">
+            Espacio de consulta académica que reúne el registro histórico y la producción científica del instituto. Explora el catálogo consolidado con las memorias de trabajos de investigación del IETA a partir de 2023, orientadas al desarrollo metodológico y la solución de problemas mediante la ciencia de datos.
+          </p>
+          <div class="research-resolution-pill">
+            Memorias de trabajos de investigación del IETA a partir de 2023
           </div>
-          <span>Registro institucional</span>
         </header>
-        <SearchFilterBar
-          v-model="memoryQuery"
-          v-model:filter-values="memoryFilters"
-          :filters="memoryFilterOptions"
-          :no-results="memoryQuery.trim().length > 0 && visibleMemories.length === 0"
-        />
-        <div v-if="memories.loading.value && memories.items.value.length === 0" class="content-state" role="status">
-          Cargando memorias…
-        </div>
-        <div v-else-if="memories.error.value && memories.items.value.length === 0" class="content-state" role="alert">
-          <p>{{ t('common.error') }}</p>
-          <button class="retry-button" type="button" @click="memories.refresh">{{ t('common.tryAgain') }}</button>
-        </div>
-        <template v-else>
-          <div v-if="visibleMemories.length" class="memories-grid">
-            <ContentCard
-              v-for="memory in visibleMemories"
-              :key="memory.id"
-              type="investigacion"
-              :title="memoryTitle(memory) || 'Memoria de investigación'"
-              :eyebrow="memory.etiqueta || memory.mdi_etiqueta || 'Investigación'"
-              :summary="memoryDescription(memory)"
-              :date="formatApiDate(memoryDate(memory))"
-              :author="memory.autor ? authorName(memory.autor) : undefined"
-              :href="mediaUrl(memory.archivo_url || memory.enlace_url || memory.mdi_enlace_url)"
+
+        <!-- Subheading & Search Filters -->
+        <div class="memories-subheading-row">
+          <h3 class="memories-section-subtitle">Últimas investigaciones</h3>
+          <div class="memories-search-bar">
+            <SearchFilterBar
+              v-model="memoryQuery"
+              v-model:filter-values="memoryFilters"
+              :filters="memoryFilterOptions"
+              :no-results="memoryQuery.trim().length > 0 && visibleMemories.length === 0"
             />
           </div>
-          <EmptyState v-else-if="memories.items.value.length === 0" :title="t('common.noResults')" />
-          <EmptyState v-else title="No hay coincidencias" description="Cambia la búsqueda o limpia el filtro de año." />
-          <LoadMoreButton
-            :loading="memories.loadingMore.value"
-            :has-more="memories.hasMore.value"
-            @load="memories.loadMore"
+        </div>
+
+        <div v-if="memories.loading.value && memories.items.value.length === 0" class="skeleton-grid" role="status">
+          <div v-for="n in 6" :key="n" class="skeleton-memory-card"></div>
+        </div>
+
+        <div v-else-if="memories.error.value && memories.items.value.length === 0" class="content-state" role="alert">
+          <EmptyState
+            title="No se pudieron cargar las memorias"
+            description="Ocurrió un error al consultar el registro de memorias."
+            action-label="Reintentar"
+            @action="memories.refresh"
           />
+        </div>
+
+        <template v-else>
+          <div v-if="visibleMemories.length" class="memories-showcase-grid">
+            <article
+              v-for="memory in visibleMemories"
+              :key="memory.id"
+              class="memory-showcase-card"
+            >
+              <!-- Optional Cover Image without breaking layout -->
+              <div v-if="memory.portada_url || memory.imagen_url" class="memory-showcase-card__cover">
+                <img :src="mediaUrl(memory.portada_url || memory.imagen_url)" :alt="memoryTitle(memory)" loading="lazy" />
+              </div>
+
+              <div class="memory-showcase-card__body">
+                <div class="memory-showcase-card__meta-top">
+                  <span class="memory-tag">
+                    <FileText :size="13" />
+                    <span>Investigación</span>
+                  </span>
+                  <span v-if="memoryDate(memory)" class="memory-year">
+                    {{ new Date(memoryDate(memory)).getFullYear() || '2024' }}
+                  </span>
+                  <span v-else class="memory-year">2024</span>
+                </div>
+
+                <h4 class="memory-showcase-card__title">
+                  {{ memoryTitle(memory) || 'Investigación Estadística del IETA' }}
+                </h4>
+
+                <p v-if="memory.autor" class="memory-showcase-card__author">
+                  {{ authorName(memory.autor) }}
+                </p>
+                <p v-else class="memory-showcase-card__author">
+                  Investigador IETA
+                </p>
+
+                <div class="memory-showcase-card__footer">
+                  <a
+                    v-if="memory.archivo_url || memory.enlace_url || memory.mdi_enlace_url"
+                    class="memory-action-link"
+                    :href="mediaUrl(memory.archivo_url || memory.enlace_url || memory.mdi_enlace_url)"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <span>Ver investigación</span>
+                    <span class="action-arrow">→</span>
+                  </a>
+                  <RouterLink
+                    v-else
+                    class="memory-action-link"
+                    :to="`/investigacion/memorias/${memory.id}`"
+                  >
+                    <span>Ver investigación</span>
+                    <span class="action-arrow">→</span>
+                  </RouterLink>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <EmptyState
+            v-else-if="memories.items.value.length === 0"
+            title="No hay memorias publicadas"
+            description="Las memorias de investigación aparecerán aquí."
+          />
+          <EmptyState
+            v-else
+            title="No se encontraron coincidencias"
+            description="Prueba con otros términos de búsqueda o cambia el año."
+          />
+
+          <div class="pagination-center">
+            <LoadMoreButton
+              :loading="memories.loadingMore.value"
+              :has-more="memories.hasMore.value"
+              label="Ver más investigaciones →"
+              @load="memories.loadMore"
+            />
+          </div>
         </template>
       </section>
 
-      <template v-else>
-        <div v-if="loading" class="content-state" role="status" aria-live="polite">
-          {{ t('common.loading') }}
+      <!-- 2. LÍNEAS DE INVESTIGACIÓN (PDF Page 3) -->
+      <section v-else key="lineas" class="lines-panel" aria-labelledby="lines-heading">
+        <!-- Centered Intro -->
+        <header class="research-centered-header">
+          <h2 id="lines-heading" class="research-centered-title">Líneas de Investigación</h2>
+          <p class="research-centered-lead">
+            Estructuramos nuestro trabajo científico alrededor de ejes temáticos estratégicos que responden a los desafíos actuales de la sociedad y la academia. Nuestras líneas de investigación orientan el desarrollo de tesis, proyectos docentes e iniciativas de interacción social, aplicando el rigor de la estadística teórica y computacional a diversas áreas del conocimiento.
+          </p>
+          <div class="research-resolution-pill">
+            De acuerdo a Resolución del Honorable Consejo Facultativo N° 1323/2022.
+          </div>
+        </header>
+
+        <div v-if="loading && lines.length === 0" class="skeleton-grid-2col" role="status">
+          <div v-for="n in 6" :key="n" class="skeleton-line-card-wide"></div>
         </div>
 
         <div v-else-if="error && lines.length === 0" class="content-state" role="alert">
-          <p>{{ t('common.error') }}</p>
-          <button class="retry-button" type="button" @click="loadLines()">
-            {{ t('common.tryAgain') }}
-          </button>
+          <EmptyState
+            title="No se pudieron cargar las líneas de investigación"
+            description="Por favor, intenta nuevamente."
+            action-label="Reintentar"
+            @action="loadLines()"
+          />
         </div>
 
         <template v-else>
-          <p v-if="error" class="inline-error" role="alert">{{ t('common.error') }}</p>
-
-          <div v-if="lines.length" class="lines-grid">
-            <ContentCard
+          <!-- 2-Column Grid as in PDF Page 3 -->
+          <div v-if="lines.length" class="lines-showcase-grid">
+            <RouterLink
               v-for="line in lines"
               :key="line.id"
-              type="investigacion"
-              :title="line.titulo"
-              :summary="line.descripcion"
-              :image="imageUrl(line.imagen_url)"
-              :image-alt="line.titulo"
               :to="detailPath(line)"
-            />
-          </div>
-          <EmptyState v-else :title="t('common.noResults')" />
+              class="line-row-card"
+            >
+              <!-- Left Visual / Graphic Thumbnail -->
+              <div class="line-row-card__visual">
+                <img
+                  v-if="imageUrl(line.imagen_url)"
+                  :src="imageUrl(line.imagen_url)"
+                  :alt="line.titulo"
+                  class="line-row-card__img"
+                  loading="lazy"
+                />
+                <div v-else class="line-row-card__graphic-mockup">
+                  <div class="chart-bars">
+                    <span class="bar bar-1"></span>
+                    <span class="bar bar-2"></span>
+                    <span class="bar bar-3"></span>
+                    <span class="bar bar-4"></span>
+                  </div>
+                  <div class="chart-curve"></div>
+                </div>
+              </div>
 
-          <LoadMoreButton :loading="loadingMore" :has-more="hasMore" @load="loadLines(true)" />
+              <!-- Right Copy -->
+              <div class="line-row-card__content">
+                <h3 class="line-row-card__title">{{ line.titulo }}</h3>
+                <p class="line-row-card__desc">
+                  {{ line.descripcion || 'Modelado del tiempo transcurrido hasta la ocurrencia de un evento específico.' }}
+                </p>
+                <div class="line-row-card__footer">
+                  <span class="line-row-card__arrow">→</span>
+                </div>
+              </div>
+            </RouterLink>
+          </div>
+
+          <EmptyState
+            v-else
+            title="No hay líneas de investigación registradas"
+            description="Las áreas de especialización se publicarán próximamente."
+          />
+
+          <div class="pagination-center">
+            <LoadMoreButton :loading="loadingMore" :has-more="hasMore" @load="loadLines(true)" />
+          </div>
         </template>
-      </template>
+      </section>
+      </Transition>
     </main>
   </div>
 </template>
 
 <style scoped>
-.view-body {
-  min-height: 40vh;
-  padding-block: var(--space-6) var(--space-8);
+/* Tab Panel Fade Transition */
+.tab-panel-fade-enter-active,
+.tab-panel-fade-leave-active {
+  transition: opacity 0.22s ease, transform 0.22s ease;
 }
 
-.lines-grid {
+.tab-panel-fade-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.tab-panel-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab-panel-fade-enter-active,
+  .tab-panel-fade-leave-active {
+    transition: none;
+  }
+}
+
+.view-body {
+  min-height: 48vh;
+  padding-block: var(--space-4) var(--space-8);
+}
+
+.tabs-bar {
+  margin-bottom: var(--space-6);
+}
+
+/* Centered Header & Resolution Pill (PDF Pages 3 & 5) */
+.research-centered-header {
+  max-width: 860px;
+  margin-inline: auto;
+  text-align: center;
+  margin-bottom: 2.75rem;
+}
+
+.research-centered-title {
+  color: #1b144b;
+  font-size: clamp(2rem, 3.5vw, 2.6rem);
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+}
+
+.research-centered-lead {
+  color: #4b5268;
+  font-size: 1.02rem;
+  line-height: 1.75;
+  margin-bottom: 1.5rem;
+}
+
+.research-resolution-pill {
+  display: inline-block;
+  padding: 0.55rem 1.6rem;
+  border: 1.5px solid #71589f;
+  border-radius: 999px;
+  color: #2c1b6e;
+  font-size: 0.85rem;
+  font-weight: 700;
+  background: rgba(113, 88, 159, 0.04);
+}
+
+/* 2-Column Lines Showcase Grid (PDF Page 3) */
+.lines-showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(1.25rem, 2vw, 1.85rem);
+}
+
+.line-row-card {
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+  padding: 1.35rem 1.6rem;
+  border: 1px solid rgba(220, 224, 235, 0.85);
+  border-radius: var(--radius-md);
+  background: var(--color-blanco);
+  text-decoration: none;
+  box-shadow: 0 4px 18px rgba(27, 20, 75, 0.04);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+.line-row-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(53, 68, 159, 0.35);
+  box-shadow: 0 12px 30px -4px rgba(27, 20, 75, 0.09);
+}
+
+.line-row-card__visual {
+  width: 7.25rem;
+  height: 7.25rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid #dce0eb;
+  overflow: hidden;
+  background: #f8f9fc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.line-row-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Graphic Mockup inside Visual Box if no image */
+.line-row-card__graphic-mockup {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0.75rem;
+  position: relative;
+  background: linear-gradient(180deg, #f0f3fa 0%, #e5eaf5 100%);
+}
+
+.chart-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.4rem;
+  height: 60%;
+}
+
+.chart-bars .bar {
+  flex: 1;
+  background: linear-gradient(180deg, #35449f 0%, #71589f 100%);
+  border-radius: 2px 2px 0 0;
+}
+
+.chart-bars .bar-1 { height: 40%; }
+.chart-bars .bar-2 { height: 75%; background: linear-gradient(180deg, #f30060 0%, #71589f 100%); }
+.chart-bars .bar-3 { height: 95%; }
+.chart-bars .bar-4 { height: 60%; }
+
+.chart-curve {
+  position: absolute;
+  top: 25%;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: #f30060;
+  transform: rotate(-12deg);
+}
+
+.line-row-card__content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.line-row-card__title {
+  color: #1b144b;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.line-row-card__desc {
+  color: #555c74;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-row-card__footer {
+  margin-top: 0.5rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.line-row-card__arrow {
+  color: #35449f;
+  font-size: 1.35rem;
+  font-weight: 700;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
+}
+
+.line-row-card:hover .line-row-card__arrow {
+  transform: translateX(6px);
+  color: var(--color-rosa-carmin);
+}
+
+/* 3-Column Memories Showcase Grid (PDF Page 5) */
+.memories-subheading-row {
+  margin-bottom: 2rem;
+}
+
+.memories-section-subtitle {
+  color: #1b144b;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.memories-search-bar {
+  margin-bottom: 1.5rem;
+}
+
+.memories-showcase-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-3);
+  gap: clamp(1.25rem, 2vw, 1.75rem);
+}
+
+.memory-showcase-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(220, 224, 235, 0.85);
+  border-radius: var(--radius-md);
+  background: var(--color-blanco);
+  overflow: hidden;
+  box-shadow: 0 4px 18px rgba(27, 20, 75, 0.04);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.memory-showcase-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px -4px rgba(27, 20, 75, 0.08);
+}
+
+.memory-showcase-card__cover {
+  height: 9rem;
+  overflow: hidden;
+  background: #f0f3fa;
+}
+
+.memory-showcase-card__cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.memory-showcase-card__body {
+  padding: 1.35rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 0.5rem;
+}
+
+.memory-showcase-card__meta-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+  color: #636b83;
+}
+
+.memory-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 700;
+  color: #1b144b;
+}
+
+.memory-year {
+  color: #8c93a8;
+  font-weight: 600;
+}
+
+.memory-showcase-card__title {
+  color: #1b144b;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.35;
+  margin-top: 0.25rem;
+}
+
+.memory-showcase-card__author {
+  color: #636b83;
+  font-size: 0.88rem;
+  margin-top: 0.25rem;
+}
+
+.memory-showcase-card__footer {
+  margin-top: auto;
+  padding-top: 1rem;
+}
+
+.memory-action-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: #1b144b;
+  font-size: 0.92rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: color 0.15s ease, gap 0.15s ease;
+}
+
+.memory-action-link:hover {
+  color: var(--color-rosa-carmin);
+  gap: 0.65rem;
+}
+
+.action-arrow {
+  font-size: 1.15rem;
+  transition: transform 0.15s ease;
+}
+
+.memory-action-link:hover .action-arrow {
+  transform: translateX(3px);
+}
+
+.pagination-center {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-6);
+}
+
+/* Skeletons */
+.skeleton-grid-2col {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+
+.skeleton-line-card-wide {
+  height: 8.5rem;
+  border-radius: var(--radius-md);
+  background: #edeef5;
+}
+
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+
+.skeleton-memory-card {
+  height: 15rem;
+  border-radius: var(--radius-md);
+  background: #edeef5;
 }
 
 .content-state {
   display: grid;
-  min-height: 18rem;
+  min-height: 20rem;
   align-content: center;
-  justify-items: center;
-  gap: var(--space-2);
   text-align: center;
 }
 
-.retry-button {
-  min-height: 2.75rem;
-  padding: var(--space-1) var(--space-2);
-  border: 1px solid var(--color-indigo);
-  border-radius: var(--radius-sm);
-  background: var(--color-indigo);
-  color: var(--color-blanco);
-  font: inherit;
-  cursor: pointer;
-}
-
-.retry-button:focus-visible {
-  outline: 3px solid var(--color-resaltador);
-  outline-offset: 2px;
-}
-
-.inline-error {
-  margin-bottom: var(--space-2);
-  color: var(--color-rosa-carmin);
-}
-
-.memories-panel {
-  padding-block: var(--space-3);
-}
-
-.memories-panel__heading {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: var(--space-2);
-  margin-bottom: var(--space-3);
-}
-
-.memories-panel__heading p {
-  color: var(--color-rosa-carmin);
-  font-size: var(--text-small-size);
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.memories-panel__heading h2 {
-  margin-top: 0.25rem;
-  color: #202e71;
-  font-size: var(--text-h4-size);
-}
-
-.memories-panel__heading > span {
-  color: var(--color-violeta);
-  font-size: var(--text-small-size);
-}
-
-.memories-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-2);
-  margin-top: var(--space-3);
-}
-
+/* Responsive */
 @media (max-width: 960px) {
-  .lines-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .lines-showcase-grid,
+  .skeleton-grid-2col {
+    grid-template-columns: 1fr;
   }
 
-  .memories-grid {
+  .memories-showcase-grid,
+  .skeleton-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 640px) {
-  .lines-grid {
+  .memories-showcase-grid,
+  .skeleton-grid {
     grid-template-columns: 1fr;
   }
 
-  .memories-grid {
-    grid-template-columns: 1fr;
+  .line-row-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .line-row-card__visual {
+    width: 100%;
+    height: 9rem;
   }
 }
 </style>

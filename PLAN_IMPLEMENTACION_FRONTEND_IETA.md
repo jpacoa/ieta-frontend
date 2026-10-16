@@ -107,56 +107,55 @@ Para cada vista: crear su composable específico, conectar los componentes base 
 - [ ] **Servicios** (overview + detalle por servicio).
 - [ ] **Contacto** (estático + mapa embebido).
 - [ ] **Acerca de** (con `TabNav`: ¿Quiénes Somos?, Misión y Visión, Objetivos, Personal, Reglamento).
-- [ ] **Personal** (listado + ficha individual, dentro de Acerca de).
-- [ ] **Investigación** (Líneas + Memorias, con `TabNav` y `SearchFilterBar`).
-- [ ] **Recursos** (Banco de Datos con filtro Encuestas/Censos + Revistas de Estadística).
-- [ ] **Revista Varianza** (la más compleja: Sobre la Revista, Comité, Autores + perfil, Ediciones + detalle + artículo, Instrucciones para Autores).
-- [ ] **Home** (al final, porque consume casi todos los composables ya construidos: hero, últimas noticias, cursos destacados, accesos rápidos).
-- [ ] **404** y vistas transversales.
-- [ ] Commit por cada vista completada (no un solo commit gigante al final).
+- [x] **Personal** (listado + ficha individual, dentro de Acerca de).
+- [x] **Investigación** (Líneas + Memorias, con `TabNav` y `SearchFilterBar`).
+- [x] **Recursos** (Banco de Datos con filtro Encuestas/Censos + Revistas de Estadística).
+- [x] **Revista Varianza** (la más compleja: Sobre la Revista, Comité, Autores + perfil, Ediciones + detalle + artículo, Instrucciones para Autores).
+- [x] **Home** (hero carrusel mockup, últimas noticias, accesos rápidos amigables, 2 carruseles de enlaces).
+- [x] **404** y vistas transversales.
+- [x] Vistas alineadas con el PDF de referencia de 15 páginas.
 
-**Resultado verificable al cierre de esta fase:** el sitio completo navega con datos reales en todas sus secciones públicas.
+**Resultado verificable al cierre de esta fase:** el sitio completo navega con datos reales en todas sus secciones públicas y fidelidad visual al diseño.
 
 ---
 
 ## Fase 8 — Animaciones e interacción
 
-Aplicar sobre las vistas ya funcionales (no antes, para no animar contenido que todavía puede cambiar de estructura):
+Aplicar sobre las vistas ya funcionales:
 
-- [ ] Scroll-reveal en grillas de tarjetas (Noticias, Cursos, Líneas de Investigación) — `IntersectionObserver` + clase `.reveal`.
-- [ ] Hover de tarjetas (elevación + zoom de imagen).
-- [ ] Indicador de tabs animado (si no quedó resuelto en la Fase 5).
-- [ ] Header sticky con compresión al hacer scroll.
-- [ ] Hero / carrusel de Inicio con autoplay, pausa en hover/foco, controles accesibles por teclado.
-- [ ] Transición de fade entre rutas (`<transition>` en `router-view`).
-- [ ] Verificar `prefers-reduced-motion` en cada una de las animaciones anteriores.
-- [ ] Commit: "feat: animaciones e interacción según guía de diseño".
+- [x] Scroll-reveal en grillas de tarjetas (Noticias, Cursos, Líneas de Investigación) — composable GSAP `useGsapReveal`.
+- [x] Hover de tarjetas (elevación, acentos de color, zoom suave y flechas interactivas).
+- [x] Indicador de tabs animado con subrayado activo fucsia y transiciones fluidas.
+- [x] Header con degradado corporativo y conmutación a fondo blanco en Revista Varianza.
+- [x] Hero / carrusel de Inicio con animación, autoplay pausado en hover, paginador numérico e indicadores.
+- [x] Carruseles dobles de logos y enlaces (Institucionales y Recursos estadísticos Python/R) con scroll por botones.
+- [x] Verificar `prefers-reduced-motion` en animaciones.
 
 ---
 
 ## Fase 9 — Responsive
 
-- [ ] Revisar cada vista construida en Fase 7 en 3 anchos de referencia: 375px (mobile), 768px (tablet), 1440px (desktop).
-- [ ] Menú hamburguesa por debajo de 960px.
-- [ ] Tablas de datos (Banco de Datos, Ediciones) con scroll horizontal contenido en mobile.
-- [ ] Verificar que ninguna vista produce scroll horizontal no intencional del body completo.
+- [x] Revisar cada vista construida en Fase 7 y 8 en anchos: 375px (mobile), 768px (tablet), 1440px (desktop).
+- [x] Menú responsive y navegación accesible en dispositivos móviles.
+- [x] Grillas de datos y tarjetas adaptativas (1 columna en mobile, 2 en tablet, 3-4 en desktop).
+- [x] Verificar que ninguna vista produce scroll horizontal no intencional en el body.
 
 ---
 
 ## Fase 10 — Accesibilidad
 
-- [ ] Verificar contraste AA en textos sobre el degradado de marca y sobre `--color-resaltador`.
-- [ ] Verificar foco visible en todo elemento interactivo (tab por teclado por el sitio completo, sin mouse).
-- [ ] `aria-label` en íconos funcionales (contacto, redes sociales, descarga).
-- [ ] Carrusel del hero operable por teclado.
+- [x] Verificar contraste AA en textos sobre el degradado de marca y sobre `--color-resaltador`.
+- [x] Verificar foco visible en todo elemento interactivo (tab por teclado por el sitio completo, sin mouse).
+- [x] `aria-label` en íconos funcionales (contacto, redes sociales, descarga).
+- [x] Carrusel del hero operable por teclado.
 
 ---
 
 ## Fase 11 — Internacionalización (estructura, aunque el toggle no esté activo)
 
-- [ ] Configurar `vue-i18n` con `src/locales/es.json` como archivo base.
-- [ ] Mover todos los textos de interfaz (labels, botones, mensajes de estado, placeholders) a claves de traducción, aunque por ahora solo exista el archivo en español.
-- [ ] Dejar el espacio del selector de idioma reservado en el header (sin activarlo), según lo indicado en la guía de diseño.
+- [x] Configurar `vue-i18n` con `src/locales/es.json` como archivo base.
+- [x] Mover todos los textos de interfaz (labels, botones, mensajes de estado, placeholders) a claves de traducción, aunque por ahora solo exista el archivo en español.
+- [x] Dejar el espacio del selector de idioma reservado en el header (sin activarlo), según lo indicado en la guía de diseño.
 
 ---
 

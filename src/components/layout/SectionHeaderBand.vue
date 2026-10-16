@@ -1,13 +1,8 @@
 <script setup lang="ts">
 /**
- * SectionHeaderBand.vue — Banda con degradado de marca.
- * Guía §3.1: --gradient-marca reservado para bandas de cabecera.
- * Guía §5: reutilizable en todas las vistas internas.
- *
- * Props:
- * - title: título principal de la sección (requerido)
- * - subtitle: subtítulo opcional debajo del título
- * - showBreadcrumb: mostrar breadcrumb (true por defecto)
+ * SectionHeaderBand.vue — Banda con degradado de marca y soporte de portada.
+ * Permite título, subtítulo, breadcrumb y una imagen de portada con overlay
+ * degradado que se fusiona con el fondo institucional (según diseño aprobado).
  */
 import Breadcrumb from './Breadcrumb.vue'
 
@@ -15,34 +10,57 @@ interface Props {
   title: string
   subtitle?: string
   showBreadcrumb?: boolean
+  image?: string
+  imageAlt?: string
+  centered?: boolean
 }
 
 withDefaults(defineProps<Props>(), {
   showBreadcrumb: true,
+  centered: false,
 })
 </script>
 
 <template>
-  <section class="section-header-band">
+  <section
+    class="section-header-band"
+    :class="{
+      'section-header-band--has-image': Boolean(image),
+      'section-header-band--centered': centered,
+    }"
+  >
+    <!-- Background Image with Fade Gradient Overlay -->
+    <div v-if="image" class="section-header-band__bg-wrapper" aria-hidden="true">
+      <img :src="image" :alt="imageAlt || ''" class="section-header-band__bg-img" />
+      <div class="section-header-band__bg-fade"></div>
+    </div>
+
     <div class="container section-header-band__inner">
       <Breadcrumb v-if="showBreadcrumb" class="section-header-band__breadcrumb" />
-      <h1 class="section-header-band__title">{{ title }}</h1>
-      <p v-if="subtitle" class="section-header-band__subtitle">{{ subtitle }}</p>
+      
+      <div class="section-header-band__content">
+        <h1 class="section-header-band__title">{{ title }}</h1>
+        <p v-if="subtitle" class="section-header-band__subtitle">{{ subtitle }}</p>
+        <slot name="extra" />
+      </div>
     </div>
   </section>
 </template>
 
 <style scoped>
 .section-header-band {
-  background: var(--gradient-marca);
-  color: var(--color-blanco);
-  padding-top: calc(var(--header-height) + var(--space-6));
-  padding-bottom: var(--space-8);
   position: relative;
   overflow: hidden;
+  background: linear-gradient(135deg, #1b144b 0%, #2c1b6e 50%, #3e278b 100%);
+  color: var(--color-blanco);
+  padding-top: calc(var(--header-height) + var(--space-6));
+  padding-bottom: var(--space-6);
+  min-height: 12rem;
+  display: flex;
+  align-items: center;
 }
 
-/* Motivo decorativo sutil de fondo */
+/* Subtle background accent */
 .section-header-band::before {
   content: '';
   position: absolute;
@@ -55,12 +73,63 @@ withDefaults(defineProps<Props>(), {
   pointer-events: none;
 }
 
+/* Background image on the right fading to the left */
+.section-header-band__bg-wrapper {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 55%;
+  max-width: 50rem;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.section-header-band__bg-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center right;
+  opacity: 0.88;
+}
+
+.section-header-band__bg-fade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to right,
+    #1b144b 0%,
+    rgba(27, 20, 75, 0.85) 30%,
+    rgba(44, 27, 110, 0.4) 65%,
+    rgba(62, 39, 139, 0.1) 100%
+  );
+}
+
 .section-header-band__inner {
   position: relative;
-  z-index: 1;
+  z-index: 2;
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+}
+
+.section-header-band--centered .section-header-band__inner {
+  align-items: center;
+  text-align: center;
+}
+
+.section-header-band__content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  max-width: 68ch;
+}
+
+.section-header-band--centered .section-header-band__content {
+  align-items: center;
+  text-align: center;
 }
 
 .section-header-band__breadcrumb {
@@ -68,28 +137,52 @@ withDefaults(defineProps<Props>(), {
 }
 
 .section-header-band__title {
-  /* Usar H2 en la banda (H1 semántico pero tamaño H2 visualmente en secciones) */
-  font-size: clamp(1.75rem, 4vw, var(--text-h2-size));
-  font-weight: var(--text-h2-weight);
-  line-height: var(--text-h2-lh);
+  font-size: clamp(2rem, 4.5vw, 3rem);
+  font-weight: 700;
+  line-height: 1.15;
   color: var(--color-blanco);
   margin: 0;
-  /* Contraste AA garantizado: blanco sobre índigo/púrpura — Guía §3.1 */
 }
 
 .section-header-band__subtitle {
-  font-size: var(--text-medium-size);
-  line-height: var(--text-medium-lh);
-  color: rgba(255, 255, 255, 0.85);
+  font-size: var(--text-large-size);
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.88);
   margin: 0;
-  max-width: 60ch;
+  max-width: 58ch;
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 1024px) {
+  .section-header-band {
+    padding-top: calc(5.75rem + var(--space-3));
+  }
 }
 
 @media (max-width: 768px) {
   .section-header-band {
-    padding-top: calc(var(--header-height) + var(--space-4));
-    padding-bottom: var(--space-6);
+    padding-top: calc(5.25rem + var(--space-3));
+    padding-bottom: var(--space-5);
+  }
+
+  .section-header-band__bg-wrapper {
+    width: 100%;
+    opacity: 0.25;
+  }
+}
+
+@media (max-width: 480px) {
+  .section-header-band {
+    padding-top: calc(4.5rem + var(--space-2));
+    padding-bottom: var(--space-4);
+  }
+
+  .section-header-band__title {
+    font-size: clamp(1.65rem, 7vw, 2.1rem);
+  }
+
+  .section-header-band__subtitle {
+    font-size: 0.95rem;
   }
 }
 </style>
-

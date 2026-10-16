@@ -83,6 +83,12 @@ a:hover {
   color: var(--color-indigo);
 }
 
+/* ── Foco visible universal (Accesibilidad WCAG AA) ──────── */
+:focus-visible {
+  outline: 2px solid var(--color-rosa-carmin);
+  outline-offset: 3px;
+}
+
 /* ── Imágenes ────────────────────────────────────────────── */
 img, video {
   max-width: 100%;

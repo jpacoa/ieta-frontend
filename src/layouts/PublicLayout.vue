@@ -10,10 +10,19 @@ import { unwrapResource } from '@/api/response'
 import type { InstitutionConfigApiItem } from '@/api/types'
 
 const route = useRoute()
+const institutionConfig = ref<InstitutionConfigApiItem | null>(null)
 const footerVariant = computed(() =>
   route.path.startsWith('/revista-varianza') ? 'editorial' : 'default',
 )
-const institutionConfig = ref<InstitutionConfigApiItem | null>(null)
+// Key for top-level view transitions:
+// Keep same key across tab parameter changes within the same view (e.g. acerca-de/:tab?, revista-varianza/:tab?, recursos/:tab?)
+// so switching tabs does NOT unmount or fade the entire page!
+const viewKey = computed(() => {
+  if (route.params.slug) return `${String(route.name)}-${String(route.params.slug)}`
+  if (route.params.id) return `${String(route.name)}-${String(route.params.id)}`
+  if (route.params.numero) return `${String(route.name)}-${String(route.params.numero)}`
+  return String(route.name || route.matched[1]?.path || route.path)
+})
 
 onMounted(async () => {
   try {
@@ -29,10 +38,10 @@ onMounted(async () => {
     <AppHeader :institution-config="institutionConfig" />
 
     <main class="main-content">
-      <!-- Transición fade entre rutas — Guía §6.7 -->
-      <RouterView v-slot="{ Component, route }">
+      <!-- Transición fade entre páginas principales (sin desmontar en cambios de sub-tabs) -->
+      <RouterView v-slot="{ Component }">
         <Transition name="page-fade" mode="out-in">
-          <component :is="Component" :key="route.path" />
+          <component :is="Component" :key="viewKey" />
         </Transition>
       </RouterView>
     </main>

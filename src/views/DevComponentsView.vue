@@ -5,6 +5,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import {
   ArrowRight,
   ArrowUpRight,
+  Bell,
   BookOpen,
   CalendarDays,
   ChartNoAxesCombined,
@@ -263,6 +264,10 @@ function loadMoreResources() {
   )
 }
 
+function previewAnnouncementModal() {
+  window.dispatchEvent(new CustomEvent('ieta:open-announcement-preview'))
+}
+
 onMounted(() => {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !showcaseRoot.value) return
 
@@ -305,9 +310,19 @@ onBeforeUnmount(() => animationContext?.revert())
             Patrones de contenido para cursos, noticias, investigación, publicaciones y recursos
             estadísticos.
           </p>
-          <a class="showcase-hero__link" href="#componentes">
-            Explorar componentes <ArrowRight :size="18" aria-hidden="true" />
-          </a>
+          <div class="showcase-hero__actions">
+            <a class="showcase-hero__link" href="#componentes">
+              Explorar componentes <ArrowRight :size="18" aria-hidden="true" />
+            </a>
+            <button
+              type="button"
+              class="showcase-hero__btn-secondary"
+              @click="previewAnnouncementModal"
+            >
+              <Bell :size="18" aria-hidden="true" />
+              Probar Modal de Notificaciones
+            </button>
+          </div>
         </div>
 
       </div>
@@ -743,9 +758,39 @@ onBeforeUnmount(() => animationContext?.revert())
   font-weight: 700;
 }
 
-.showcase-hero__link {
+.showcase-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
   margin-top: var(--space-3);
+}
+
+.showcase-hero__link {
   color: var(--color-blanco);
+}
+
+.showcase-hero__btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(4px);
+  color: var(--color-blanco);
+  font: inherit;
+  font-size: var(--text-small-size);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+
+.showcase-hero__btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.6);
+  transform: translateY(-2px);
 }
 
 .showcase-hero__seal {

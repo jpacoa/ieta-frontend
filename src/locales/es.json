@@ -41,12 +41,31 @@
     "loading": "Cargando...",
     "error": "Ocurrió un error al cargar el contenido.",
     "noResults": "No se encontraron resultados.",
-    "tryAgain": "Intentar de nuevo"
+    "tryAgain": "Intentar de nuevo",
+    "download": "Descargar",
+    "openExternal": "Abrir enlace externo",
+    "close": "Cerrar",
+    "back": "Volver"
   },
   "status": {
     "open": "Inscripciones abiertas",
     "closed": "Inscripciones cerradas",
     "finished": "Finalizado"
+  },
+  "home": {
+    "heroEyebrow": "Instituto de Estadística Teórica y Aplicada",
+    "quickAccess": "Accesos Rápidos",
+    "researchTitle": "Líneas de Investigación",
+    "researchSubtitle": "Ejes temáticos y metodologías científicas prioritarias desarrolladas en el IETA.",
+    "newsTitle": "Últimas Noticias",
+    "newsSubtitle": "Publicaciones recientes, eventos académicos y novedades del instituto.",
+    "journalTitle": "Revista Científica Varianza",
+    "journalSubtitle": "Órgano oficial de difusión científica del IETA indexado a nivel internacional.",
+    "externalLinks": "Nuestros Enlaces",
+    "externalLinksSubtitle": "Plataformas institucionales, bibliotecas y herramientas estadísticas especializadas.",
+    "viewAllNews": "Ver todas las noticias",
+    "viewAllResearch": "Ver todas las líneas",
+    "viewAllServices": "Ver todos los servicios"
   },
   "about": {
     "whoWeAreHeading": "¿Quiénes somos?",
@@ -54,6 +73,9 @@
     "researchHeading": "Investigación",
     "missionHeading": "Misión",
     "visionHeading": "Visión",
+    "objectivesHeading": "Objetivos Estratégicos",
+    "staffHeading": "Personal del Instituto",
+    "regulationsHeading": "Reglamento Interno",
     "sectionUnavailable": "Contenido no disponible",
     "sectionUnavailableDescription": "Esta sección no forma parte de la respuesta actual del servicio Sobre Nosotros."
   },
@@ -61,7 +83,46 @@
     "linesTitle": "Líneas de Investigación",
     "lineDetailTitle": "Detalle de línea de investigación",
     "backToLines": "Volver a líneas de investigación",
+    "memoriesTitle": "Memorias de Investigación",
     "memoriesPending": "El contenido de memorias de investigación está pendiente de implementación."
+  },
+  "news": {
+    "title": "Noticias",
+    "subtitle": "Actualidad académica, convocatorias y producción científica del IETA.",
+    "searchPlaceholder": "Buscar noticias por título o contenido...",
+    "featuredBadge": "Destacado",
+    "readArticle": "Leer noticia completa",
+    "emptyTitle": "No hay noticias disponibles",
+    "emptyDesc": "Las publicaciones y novedades aparecerán aquí próximamente."
+  },
+  "services": {
+    "title": "Servicios",
+    "subtitle": "Asesoría estadística especializada, diseño muestral y soporte técnico para la investigación y la toma de decisiones.",
+    "searchPlaceholder": "Buscar servicios y capacitaciones...",
+    "requestService": "Solicitar servicio",
+    "viewDetail": "Ver detalles del servicio",
+    "emptyTitle": "No hay servicios disponibles",
+    "emptyDesc": "Los programas y servicios ofrecidos se publicarán próximamente."
+  },
+  "journal": {
+    "title": "Revista Varianza",
+    "subtitle": "Publicación científica del Instituto de Estadística Teórica y Aplicada - UMSA.",
+    "issn": "ISSN Digital: 2617-6475",
+    "currentEdition": "Edición actual",
+    "editorialCommittee": "Comité Editorial",
+    "authorGuidelines": "Directrices para Autores",
+    "previousEditions": "Números Anteriores",
+    "downloadPdf": "Descargar PDF"
+  },
+  "resources": {
+    "title": "Recursos",
+    "subtitle": "Bancos de datos, herramientas analíticas y publicaciones estadísticas especializadas.",
+    "databaseTitle": "Banco de Datos",
+    "statsJournalsTitle": "Revistas de Estadística",
+    "searchDatabasePlaceholder": "Buscar en el banco de datos...",
+    "searchJournalsPlaceholder": "Buscar revistas estadísticas...",
+    "downloadFile": "Descargar archivo",
+    "openLink": "Visitar recurso"
   },
   "contact": {
     "title": "Contacto",
